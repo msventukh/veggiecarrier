@@ -1,2 +1,4 @@
 audio/*
 !audio/.gitkeep
+.server.pid
+.server.log

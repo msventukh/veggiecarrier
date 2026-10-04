@@ -42,15 +42,13 @@ You don't need to install anything. There's no build step or package manager.
 
 1. Put your song clips in the `audio/` folder (see below).
 2. Edit `questions.js` with your categories and answers (see below).
-3. Start a small local web server from the project folder. Python already
-   comes with macOS:
+3. Run `make start` in the project folder. It starts a small local web
+   server in the background and opens the game at <http://localhost:8000>.
+4. Run `make stop` when you're done.
 
-   ```sh
-   python3 -m http.server 8000 --bind 127.0.0.1
-   ```
-
-4. Open <http://localhost:8000> in a web browser. Stop the server with
-   Ctrl+C when you're done.
+If port 8000 is taken, use another one: `make start PORT=8080`. Without
+`make`, you can run the server directly and stop it with Ctrl+C:
+`python3 -m http.server 8000 --bind 127.0.0.1`.
 
 The server is needed for YouTube questions, because YouTube won't play videos
 in a page opened directly from disk. If all your questions are local audio

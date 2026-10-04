@@ -29,12 +29,13 @@ round/tiebreaker, score penalties for wrong answers.
 
 - Plain HTML/CSS/JS. No framework, no build step, no package manager, no
   backend. Served by a plain static local server
-  (`python3 -m http.server 8000 --bind 127.0.0.1`), which YouTube's embedded
-  player needs. Local-file-only boards still work opened directly from disk.
-- YouTube questions (the `feature/youtube-streaming-poc` branch, a proof of
-  concept compared against local clip files) use YouTube's IFrame Player API,
-  loaded from youtube.com. That's the only network access, and it's needed
-  for YouTube questions only.
+  (`python3 -m http.server`, bound to 127.0.0.1), which YouTube's embedded
+  player needs. `make start` / `make stop` run it in the background (PID in
+  `.server.pid`, git-ignored; `PORT=` overrides 8000). Local-file-only
+  boards still work opened directly from disk.
+- YouTube questions use YouTube's IFrame Player API, loaded from
+  youtube.com. That's the only network access, and it's needed for YouTube
+  questions only.
 - No persistence of any kind — all game state lives in an in-memory JS object
   (`state` in `app.js`) and is lost on reload/restart by design. There is no
   database and none is planned.
