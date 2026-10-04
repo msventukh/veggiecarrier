@@ -28,7 +28,13 @@ round/tiebreaker, score penalties for wrong answers.
 ## Architecture
 
 - Plain HTML/CSS/JS. No framework, no build step, no package manager, no
-  server. Open `index.html` directly in a browser.
+  backend. Served by a plain static local server
+  (`python3 -m http.server 8000 --bind 127.0.0.1`), which YouTube's embedded
+  player needs. Local-file-only boards still work opened directly from disk.
+- YouTube questions (the `feature/youtube-streaming-poc` branch, a proof of
+  concept compared against local clip files) use YouTube's IFrame Player API,
+  loaded from youtube.com. That's the only network access, and it's needed
+  for YouTube questions only.
 - No persistence of any kind — all game state lives in an in-memory JS object
   (`state` in `app.js`) and is lost on reload/restart by design. There is no
   database and none is planned.
@@ -43,16 +49,25 @@ round/tiebreaker, score penalties for wrong answers.
 - `style.css` — all styling.
 - `app.js` — all game logic and state. Key functions:
   - `buildBoard()` — builds the in-memory board from `questions.js`.
-  - `renderQuestionContent(cell)` — starts the question's audio clip and
-    wires up the overlay's play/pause/replay controls. `stopAudio()` is
-    called from `closeQuestion()` so a clip never outlives its overlay.
+  - `renderQuestionContent(cell)` — starts the question's clip. A clip is
+    either `createAudioClip()` (local file) or `createYouTubeClip()` (video
+    segment), both behind one small interface (`status()`, `toggle()`,
+    `restart()`, `stop()`) that `updateClipControls()` renders. `stopClip()`
+    is called from `closeQuestion()` so a clip never outlives its overlay.
+  - YouTube clips: the video plays under a cover panel (title/art would spoil
+    the answer) that **Reveal Answer** removes. The clip's `end` is enforced
+    by polling `getCurrentTime()`, not the player's own `end` option.
+    Status stays "loading" through initial buffering; it falls back to
+    "ready" (Play button) after 5 s in case autoplay was blocked.
   - `isGameOver()` — the end-of-game condition (currently: every cell used).
   - `markCorrect(playerIndex)` / `markWrong(playerIndex)` — scoring and
     per-question attempt tracking.
 - `questions.js` — the editable content file: `VALUES` (the 8 column point
   values) and `CATEGORIES` (8 categories, each with 8 questions in the same
-  order as `VALUES`). Each question is `{ audio, answer }`: `audio` is a path
-  (relative to `index.html`) to a pre-trimmed clip that is played in full.
+  order as `VALUES`). Each question is `{ audio, answer }` or
+  `{ youtube: { id, start, end }, answer }`: `audio` is a path (relative to
+  `index.html`) to a pre-trimmed clip that is played in full; `start`/`end`
+  are seconds or "m:ss" strings.
   **Edit this file directly** to set up real questions before a game; it
   currently ships with placeholder paths to files that don't exist.
 - `audio/` — where the clip files go. Its contents are git-ignored (the
