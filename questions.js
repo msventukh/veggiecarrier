@@ -2,10 +2,16 @@
 // Each category must have exactly as many questions as there are VALUES,
 // in matching order (questions[i] corresponds to VALUES[i]).
 //
-// Each question is a song clip the players have to guess:
-//   audio  — path to a pre-trimmed clip, relative to index.html (put the files
-//            in the audio/ folder). The whole file is played.
-//   answer — what the GM sees on "Reveal Answer", e.g. "Queen — Bohemian Rhapsody".
+// Each question is a song clip the players have to guess, given either as
+// a local file or as a segment of a YouTube video:
+//   audio   — path to a pre-trimmed clip, relative to index.html (put the files
+//             in the audio/ folder). The whole file is played.
+//   youtube — { id, start, end }: the video ID (the part after "v=" in the URL)
+//             and where the clip starts and ends, in seconds (83.5) or "m:ss"
+//             ("1:23.5"). `start` defaults to 0; without `end` the video plays
+//             to its end. Needs an internet connection and the local server
+//             (see README).
+//   answer  — what the GM sees on "Reveal Answer", e.g. "Queen — Bohemian Rhapsody".
 
 const VALUES = [100, 200, 300, 400, 500, 600, 800, 1000];
 
@@ -26,8 +32,8 @@ const CATEGORIES = [
   {
     name: "B",
     questions: [
-      { audio: "audio/b-100.mp3", answer: "Placeholder song B-100" },
-      { audio: "audio/b-200.mp3", answer: "Placeholder song B-200" },
+      { youtube: { id: "1n8Xg3_YaqM", start: "0:50", end: "0:58" }, answer: "Massive Attack — Silent Spring" },
+      { youtube: { id: "dQw4w9WgXcQ", start: 43, end: 51 }, answer: "Rick Astley — Never Gonna Give You Up" },
       { audio: "audio/b-300.mp3", answer: "Placeholder song B-300" },
       { audio: "audio/b-400.mp3", answer: "Placeholder song B-400" },
       { audio: "audio/b-500.mp3", answer: "Placeholder song B-500" },

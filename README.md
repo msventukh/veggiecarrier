@@ -38,13 +38,23 @@ There are no Daily Doubles, no Final round and no penalties for wrong answers.
 
 ## Running it
 
-You don't need to install anything. There's no server, build step or package
-manager.
+You don't need to install anything. There's no build step or package manager.
 
 1. Put your song clips in the `audio/` folder (see below).
 2. Edit `questions.js` with your categories and answers (see below).
-3. Open `index.html` in a web browser, by double-clicking it or dragging it
-   into a browser window.
+3. Start a small local web server from the project folder. Python already
+   comes with macOS:
+
+   ```sh
+   python3 -m http.server 8000 --bind 127.0.0.1
+   ```
+
+4. Open <http://localhost:8000> in a web browser. Stop the server with
+   Ctrl+C when you're done.
+
+The server is needed for YouTube questions, because YouTube won't play videos
+in a page opened directly from disk. If all your questions are local audio
+files, you can skip it and simply open `index.html` in a browser instead.
 
 Nothing is saved. Reloading or closing the page clears the game, scores
 included. Avoid refreshing in the middle of a game.
@@ -58,15 +68,35 @@ All game content is in **`questions.js`**. Edit it directly before a game.
   questions, in the same order as `VALUES`. The first question is worth 100,
   the second 200, and so on.
 
-Each question looks like this:
+Each question's clip is either a local audio file or a segment of a YouTube
+video. You can mix both kinds on one board.
 
 ```js
 { audio: "audio/rock-300.mp3", answer: "Queen — Bohemian Rhapsody" }
+{ youtube: { id: "fJ9rUzIMcZQ", start: "0:50", end: "0:58" }, answer: "Queen — Bohemian Rhapsody" }
 ```
 
 - `audio` is the path to the clip, relative to `index.html`. The app plays the
   whole file, so trim each clip to the length you want before the game.
+- `youtube` plays part of a YouTube video:
+  - `id` is the part after `v=` in the video's URL.
+  - `start` and `end` are where the clip begins and ends, in seconds (`50`) or
+    minutes and seconds (`"0:50"`). Without `start` the clip plays from the
+    beginning; without `end` it plays to the end of the video.
 - `answer` is the text the GM sees after clicking **Reveal Answer**.
+
+### YouTube questions
+
+- They need an internet connection and the local server (see
+  [Running it](#running-it)).
+- While the clip plays, the video is hidden behind a status panel, because
+  the video's title and picture usually give the answer away. **Reveal
+  Answer** uncovers it.
+- If you're signed in to YouTube Premium in the same browser, there are no
+  ads.
+- Some videos can't be played outside YouTube. Their owners have blocked it.
+  The question then shows an error instead of playing, so test your YouTube
+  questions before the game.
 
 As shipped, `questions.js` contains placeholder categories (A–H) that point to
 audio files that don't exist. Opening one of those cells shows

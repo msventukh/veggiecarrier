@@ -1,7 +1,7 @@
 // In-memory game state. Nothing here is persisted — a reload starts fresh.
 const state = {
   players: [],   // { name, score }
-  board: null,   // [{ name, cells: [{ value, audio, answer, used }] }]
+  board: null,   // [{ name, cells: [{ value, audio, youtube, answer, used }] }]
   activeCell: null, // { catIndex, valIndex, remainingPlayerIndexes }
 };
 
@@ -71,6 +71,7 @@ function buildBoard() {
     cells: category.questions.map((q, i) => ({
       value: VALUES[i],
       audio: q.audio,
+      youtube: q.youtube,
       answer: q.answer,
       used: false,
     })),
@@ -130,6 +131,9 @@ const audioStatusEl = document.getElementById("audio-status");
 const audioControlsEl = document.getElementById("audio-controls");
 const audioToggleBtn = document.getElementById("audio-toggle-btn");
 const audioReplayBtn = document.getElementById("audio-replay-btn");
+const videoBoxEl = document.getElementById("video-box");
+const videoHostEl = document.getElementById("video-host");
+const videoCoverEl = document.getElementById("video-cover");
 
 function openQuestion(catIndex, valIndex) {
   state.activeCell = {
@@ -144,13 +148,14 @@ function openQuestion(catIndex, valIndex) {
   overlayValueEl.textContent = cell.value;
   overlayAnswerEl.textContent = cell.answer;
   overlayAnswerEl.classList.add("hidden");
+  videoCoverEl.classList.remove("hidden");
   renderQuestionContent(cell);
   renderOverlayPlayers();
   overlayEl.classList.remove("hidden");
 }
 
 function closeQuestion() {
-  stopAudio();
+  stopClip();
   state.activeCell = null;
   overlayEl.classList.add("hidden");
 }
@@ -176,84 +181,272 @@ function renderOverlayPlayers() {
   });
 }
 
-// ---- Audio playback ----
+// ---- Clip playback ----
 
-let activeAudio = null; // Audio element for the open question, if any
+// A question's clip is either a local audio file or a segment of a YouTube
+// video. Both are wrapped in the same small interface, so the overlay
+// controls don't care which one is playing:
+//   status()      "loading", "ready" (not started), "playing", "paused",
+//                 "ended" or "error"
+//   errorMessage  shown when status() is "error"
+//   toggle()      play / pause / resume / play again
+//   restart()     play from the clip's start
+//   stop()        stop for good and release the player
+let activeClip = null;
 
 // Starts the question's clip as soon as the overlay opens. The cell click
 // counts as a user gesture, so browsers allow the autoplay.
 function renderQuestionContent(cell) {
-  stopAudio();
-  const audio = new Audio(cell.audio);
-  activeAudio = audio;
-
-  // Ignore events from a clip that has since been stopped/replaced.
-  const update = () => {
-    if (audio === activeAudio) updateAudioControls();
+  stopClip();
+  // Ignore events from a clip that has since been stopped/replaced (or that
+  // fire while it's still being created; it's rendered right after anyway).
+  let clip = null;
+  const onChange = () => {
+    if (clip && clip === activeClip) updateClipControls();
   };
-  ["play", "pause", "ended", "error"].forEach((ev) => audio.addEventListener(ev, update));
-
-  audio.play().catch(update);
-  updateAudioControls();
+  clip = cell.youtube
+    ? createYouTubeClip(cell.youtube, onChange)
+    : createAudioClip(cell.audio, onChange);
+  activeClip = clip;
+  updateClipControls();
 }
 
-function updateAudioControls() {
-  const audio = activeAudio;
+const CLIP_STATUS_VIEW = {
+  // status: [status text, toggle button label (null = no controls), show Replay]
+  loading: ["Loading…", null, false],
+  ready: ["Ready", "Play", false],
+  playing: ["Playing…", "Pause", false],
+  paused: ["Paused", "Resume", true],
+  ended: ["Finished", "Play again", false],
+};
 
-  if (audio.error) {
-    audioStatusEl.textContent = `Audio failed to load: ${audio.getAttribute("src")}`;
-    audioControlsEl.classList.add("hidden");
-    return;
-  }
-  audioControlsEl.classList.remove("hidden");
+function updateClipControls() {
+  const status = activeClip.status();
+  const [text, toggleLabel, showReplay] =
+    status === "error" ? [activeClip.errorMessage, null, false] : CLIP_STATUS_VIEW[status];
 
-  let status, toggleLabel, showReplay;
-  if (audio.ended) {
-    [status, toggleLabel, showReplay] = ["Finished", "Play again", false];
-  } else if (!audio.paused) {
-    [status, toggleLabel, showReplay] = ["Playing…", "Pause", false];
-  } else if (audio.currentTime === 0) {
-    // Not started yet (still loading, or autoplay was blocked).
-    [status, toggleLabel, showReplay] = ["Ready", "Play", false];
-  } else {
-    [status, toggleLabel, showReplay] = ["Paused", "Resume", true];
-  }
+  // For YouTube clips the cover over the video shows the status instead.
+  audioStatusEl.classList.toggle("hidden", !videoBoxEl.classList.contains("hidden"));
+  audioStatusEl.textContent = text;
+  videoCoverEl.textContent = text;
 
-  audioStatusEl.textContent = status;
-  audioToggleBtn.textContent = toggleLabel;
+  audioControlsEl.classList.toggle("hidden", !toggleLabel);
+  audioToggleBtn.textContent = toggleLabel || "";
   audioReplayBtn.classList.toggle("hidden", !showReplay);
 }
 
-function stopAudio() {
-  if (!activeAudio) return;
-  const audio = activeAudio;
-  activeAudio = null;
-  audio.pause();
-  audio.removeAttribute("src");
-  audio.load(); // abort any in-flight loading
+function stopClip() {
+  if (!activeClip) return;
+  const clip = activeClip;
+  activeClip = null;
+  clip.stop();
 }
 
-audioToggleBtn.addEventListener("click", () => {
-  if (!activeAudio) return;
-  if (activeAudio.ended) {
-    activeAudio.currentTime = 0;
-    activeAudio.play();
-  } else if (activeAudio.paused) {
-    activeAudio.play();
-  } else {
-    activeAudio.pause();
-  }
-});
+audioToggleBtn.addEventListener("click", () => activeClip && activeClip.toggle());
+audioReplayBtn.addEventListener("click", () => activeClip && activeClip.restart());
 
-audioReplayBtn.addEventListener("click", () => {
-  if (!activeAudio) return;
-  activeAudio.currentTime = 0;
-  activeAudio.play();
-});
-
+// Revealing the answer also uncovers the video, if there is one.
 revealAnswerBtn.addEventListener("click", () => {
-  overlayAnswerEl.classList.toggle("hidden");
+  const hidden = overlayAnswerEl.classList.toggle("hidden");
+  videoCoverEl.classList.toggle("hidden", !hidden);
 });
+
+// -- Local audio file --
+
+function createAudioClip(src, onChange) {
+  const audio = new Audio(src);
+  ["play", "pause", "ended", "error"].forEach((ev) => audio.addEventListener(ev, onChange));
+  audio.play().catch(onChange);
+
+  return {
+    errorMessage: `Audio failed to load: ${src}`,
+    status() {
+      if (audio.error) return "error";
+      if (audio.ended) return "ended";
+      if (!audio.paused) return "playing";
+      // Not started yet (still loading, or autoplay was blocked).
+      return audio.currentTime === 0 ? "ready" : "paused";
+    },
+    toggle() {
+      if (audio.ended) audio.currentTime = 0;
+      if (audio.paused) audio.play();
+      else audio.pause();
+    },
+    restart() {
+      audio.currentTime = 0;
+      audio.play();
+    },
+    stop() {
+      audio.pause();
+      audio.removeAttribute("src");
+      audio.load(); // abort any in-flight loading
+    },
+  };
+}
+
+// -- YouTube video segment --
+
+const YOUTUBE_ERRORS = {
+  2: "Invalid YouTube video ID.",
+  5: "The YouTube player failed to play this video.",
+  100: "This YouTube video was not found or is private.",
+  101: "The video's owner doesn't allow it to be played outside YouTube.",
+  150: "The video's owner doesn't allow it to be played outside YouTube.",
+  153: "YouTube refused to play the video. Open the game through the local server (see README).",
+};
+
+let youTubeApi = null; // Promise of the YT global, loaded on first use
+
+function loadYouTubeApi() {
+  if (!youTubeApi) {
+    youTubeApi = new Promise((resolve, reject) => {
+      window.onYouTubeIframeAPIReady = () => resolve(window.YT);
+      const script = document.createElement("script");
+      script.src = "https://www.youtube.com/iframe_api";
+      script.onerror = () => {
+        youTubeApi = null; // allow a retry on the next question
+        script.remove();
+        reject(new Error("Couldn't load the YouTube player. Check the internet connection."));
+      };
+      document.head.appendChild(script);
+    });
+  }
+  return youTubeApi;
+}
+
+// Accepts seconds (83.5) or "m:ss" ("1:23.5"), like clips.txt.
+function parseClipTime(value) {
+  if (typeof value === "number") return value;
+  return String(value)
+    .split(":")
+    .reduce((total, part) => total * 60 + Number(part), 0);
+}
+
+function createYouTubeClip({ id, start = 0, end }, onChange) {
+  const startSec = parseClipTime(start);
+  const endSec = end === undefined ? null : parseClipTime(end);
+
+  let status = "loading";
+  let player = null;
+  let endTimer = null;
+  let startTimer = null;
+  let stopped = false;
+
+  const clip = {
+    errorMessage: "",
+    status: () => status,
+    toggle() {
+      if (!player) return;
+      if (status === "playing") {
+        player.pauseVideo();
+        return;
+      }
+      if (status === "ended") player.seekTo(startSec, true);
+      player.playVideo();
+    },
+    restart() {
+      if (!player) return;
+      player.seekTo(startSec, true);
+      player.playVideo();
+    },
+    stop() {
+      stopped = true;
+      clearInterval(endTimer);
+      clearTimeout(startTimer);
+      if (player) player.destroy();
+      videoHostEl.replaceChildren();
+      videoBoxEl.classList.add("hidden");
+    },
+  };
+
+  function setStatus(next) {
+    status = next;
+    onChange();
+  }
+
+  function fail(message) {
+    clearInterval(endTimer);
+    clip.errorMessage = message;
+    setStatus("error");
+  }
+
+  // The player API replaces this element with its iframe.
+  const target = document.createElement("div");
+  videoHostEl.replaceChildren(target);
+  videoBoxEl.classList.remove("hidden");
+
+  if (location.protocol === "file:") {
+    fail("YouTube clips only play when the game is opened through the local server (see README).");
+    return clip;
+  }
+  if (!id || isNaN(startSec) || (endSec !== null && isNaN(endSec))) {
+    fail(`Invalid YouTube clip in questions.js: ${JSON.stringify({ id, start, end })}`);
+    return clip;
+  }
+
+  loadYouTubeApi().then(
+    (YT) => {
+      if (stopped) return;
+      player = new YT.Player(target, {
+        videoId: id,
+        width: "100%",
+        height: "100%",
+        playerVars: {
+          controls: 0,
+          disablekb: 1,
+          rel: 0,
+          playsinline: 1,
+          iv_load_policy: 3,
+          origin: location.origin,
+        },
+        events: {
+          onReady: () => {
+            if (stopped) return;
+            player.seekTo(startSec, true);
+            player.playVideo();
+            // Buffering can take a few seconds, so the status stays "loading"
+            // until playback starts. If it never does (e.g. the browser blocked
+            // autoplay), offer the Play button instead.
+            startTimer = setTimeout(() => {
+              if (status === "loading") setStatus("ready");
+            }, 5000);
+          },
+          onStateChange: (e) => {
+            if (stopped) return;
+            if (e.data === YT.PlayerState.PLAYING) setStatus("playing");
+            else if (e.data === YT.PlayerState.ENDED) setStatus("ended");
+            // A pause we triggered at the clip's end time keeps "ended".
+            else if (e.data === YT.PlayerState.PAUSED && status !== "ended") setStatus("paused");
+          },
+          onError: (e) => {
+            if (!stopped) fail(YOUTUBE_ERRORS[e.data] || `YouTube player error ${e.data}.`);
+          },
+        },
+      });
+
+      // The player's own "end" option is unreliable after seeking, so the
+      // clip's end time is enforced here instead.
+      if (endSec !== null) {
+        endTimer = setInterval(() => {
+          if (status === "playing" && player.getCurrentTime() >= endSec) {
+            setStatus("ended");
+            player.pauseVideo();
+          }
+        }, 200);
+      }
+    },
+    (err) => {
+      if (!stopped) fail(err.message);
+    }
+  );
+
+  return clip;
+}
+
+// Start fetching the player script early if any question needs it.
+if (location.protocol !== "file:" && CATEGORIES.some((c) => c.questions.some((q) => q.youtube))) {
+  loadYouTubeApi().catch(() => {}); // the error is shown when a YouTube question opens
+}
 
 overlayPlayersEl.addEventListener("click", (e) => {
   const btn = e.target.closest("button");
