@@ -1,8 +1,8 @@
 # Trivia Board
 
 A personal-use, local-only Jeopardy-style trivia game for 2-4 players. The
-repo name ("veggiecarrier") has no relation to the project — it predates the
-idea.
+name "VeggieCarrier" references the popular YouTube channel "Овощевоз"
+(roughly "veggie carrier"), where players guess songs from short clips.
 
 ## How it's played
 
