@@ -1,7 +1,7 @@
 // In-memory game state. Nothing here is persisted — a reload starts fresh.
 const state = {
   players: [],   // { name, score }
-  board: null,   // [{ name, cells: [{ value, question, answer, used }] }]
+  board: null,   // [{ name, cells: [{ value, audio, answer, used }] }]
   activeCell: null, // { catIndex, valIndex, remainingPlayerIndexes }
 };
 
@@ -70,7 +70,7 @@ function buildBoard() {
     name: category.name,
     cells: category.questions.map((q, i) => ({
       value: VALUES[i],
-      question: q.question,
+      audio: q.audio,
       answer: q.answer,
       used: false,
     })),
@@ -122,11 +122,14 @@ function renderBoard() {
 const overlayEl = document.getElementById("question-overlay");
 const overlayCategoryEl = document.getElementById("overlay-category");
 const overlayValueEl = document.getElementById("overlay-value");
-const overlayContentEl = document.getElementById("overlay-content");
 const overlayAnswerEl = document.getElementById("overlay-answer");
 const overlayPlayersEl = document.getElementById("overlay-players");
 const revealAnswerBtn = document.getElementById("reveal-answer-btn");
 const cancelQuestionBtn = document.getElementById("cancel-question-btn");
+const audioStatusEl = document.getElementById("audio-status");
+const audioControlsEl = document.getElementById("audio-controls");
+const audioToggleBtn = document.getElementById("audio-toggle-btn");
+const audioReplayBtn = document.getElementById("audio-replay-btn");
 
 function openQuestion(catIndex, valIndex) {
   state.activeCell = {
@@ -134,25 +137,28 @@ function openQuestion(catIndex, valIndex) {
     valIndex,
     remainingPlayerIndexes: state.players.map((_, i) => i),
   };
-  overlayAnswerEl.classList.add("hidden");
-  renderQuestionOverlay();
-  overlayEl.classList.remove("hidden");
-}
-
-function closeQuestion() {
-  state.activeCell = null;
-  overlayEl.classList.add("hidden");
-}
-
-function renderQuestionOverlay() {
-  const { catIndex, valIndex, remainingPlayerIndexes } = state.activeCell;
   const category = state.board[catIndex];
   const cell = category.cells[valIndex];
 
   overlayCategoryEl.textContent = category.name;
   overlayValueEl.textContent = cell.value;
-  overlayContentEl.innerHTML = renderQuestionContent(cell);
   overlayAnswerEl.textContent = cell.answer;
+  overlayAnswerEl.classList.add("hidden");
+  renderQuestionContent(cell);
+  renderOverlayPlayers();
+  overlayEl.classList.remove("hidden");
+}
+
+function closeQuestion() {
+  stopAudio();
+  state.activeCell = null;
+  overlayEl.classList.add("hidden");
+}
+
+// Only the player list is re-rendered after a wrong answer, so the clip keeps
+// playing (or stays paused) instead of restarting.
+function renderOverlayPlayers() {
+  const { remainingPlayerIndexes } = state.activeCell;
 
   overlayPlayersEl.innerHTML = "";
   remainingPlayerIndexes.forEach((playerIndex) => {
@@ -170,10 +176,80 @@ function renderQuestionOverlay() {
   });
 }
 
-// seam: text today, could render an <audio> player instead in a later version
+// ---- Audio playback ----
+
+let activeAudio = null; // Audio element for the open question, if any
+
+// Starts the question's clip as soon as the overlay opens. The cell click
+// counts as a user gesture, so browsers allow the autoplay.
 function renderQuestionContent(cell) {
-  return escapeHtml(cell.question);
+  stopAudio();
+  const audio = new Audio(cell.audio);
+  activeAudio = audio;
+
+  // Ignore events from a clip that has since been stopped/replaced.
+  const update = () => {
+    if (audio === activeAudio) updateAudioControls();
+  };
+  ["play", "pause", "ended", "error"].forEach((ev) => audio.addEventListener(ev, update));
+
+  audio.play().catch(update);
+  updateAudioControls();
 }
+
+function updateAudioControls() {
+  const audio = activeAudio;
+
+  if (audio.error) {
+    audioStatusEl.textContent = `Audio failed to load: ${audio.getAttribute("src")}`;
+    audioControlsEl.classList.add("hidden");
+    return;
+  }
+  audioControlsEl.classList.remove("hidden");
+
+  let status, toggleLabel, showReplay;
+  if (audio.ended) {
+    [status, toggleLabel, showReplay] = ["Finished", "Play again", false];
+  } else if (!audio.paused) {
+    [status, toggleLabel, showReplay] = ["Playing…", "Pause", false];
+  } else if (audio.currentTime === 0) {
+    // Not started yet (still loading, or autoplay was blocked).
+    [status, toggleLabel, showReplay] = ["Ready", "Play", false];
+  } else {
+    [status, toggleLabel, showReplay] = ["Paused", "Resume", true];
+  }
+
+  audioStatusEl.textContent = status;
+  audioToggleBtn.textContent = toggleLabel;
+  audioReplayBtn.classList.toggle("hidden", !showReplay);
+}
+
+function stopAudio() {
+  if (!activeAudio) return;
+  const audio = activeAudio;
+  activeAudio = null;
+  audio.pause();
+  audio.removeAttribute("src");
+  audio.load(); // abort any in-flight loading
+}
+
+audioToggleBtn.addEventListener("click", () => {
+  if (!activeAudio) return;
+  if (activeAudio.ended) {
+    activeAudio.currentTime = 0;
+    activeAudio.play();
+  } else if (activeAudio.paused) {
+    activeAudio.play();
+  } else {
+    activeAudio.pause();
+  }
+});
+
+audioReplayBtn.addEventListener("click", () => {
+  if (!activeAudio) return;
+  activeAudio.currentTime = 0;
+  activeAudio.play();
+});
 
 revealAnswerBtn.addEventListener("click", () => {
   overlayAnswerEl.classList.toggle("hidden");
@@ -217,7 +293,7 @@ function markWrong(playerIndex) {
     renderBoard();
     checkGameOver();
   } else {
-    renderQuestionOverlay();
+    renderOverlayPlayers();
   }
 }
 

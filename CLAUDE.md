@@ -11,9 +11,10 @@ idea.
   actions on their behalf.
 - The board is an 8x8 grid: 8 categories (rows) x 8 point values (columns):
   100, 200, 300, 400, 500, 600, 800, 1000.
-- Opening a cell reveals its question. The GM reveals the answer to themself
-  via a toggle and judges correctness manually — there's no automated
-  answer-checking.
+- Each question is a short audio clip from a song; players guess the song.
+  Opening a cell autoplays its clip. The GM can pause, then either resume or
+  replay from the start. The GM reveals the answer to themself via a toggle
+  and judges correctness manually — there's no automated answer-checking.
 - Each player gets **exactly one attempt per question**. A wrong answer has
   no score penalty; the question just stays open for the next player who
   signaled. It closes as soon as someone answers correctly, or once every
@@ -38,19 +39,25 @@ round/tiebreaker, score penalties for wrong answers.
 ## Files
 
 - `index.html` — the three screens (start, board, game-over) plus the
-  question overlay markup.
+  question overlay markup (including the audio controls).
 - `style.css` — all styling.
 - `app.js` — all game logic and state. Key functions:
   - `buildBoard()` — builds the in-memory board from `questions.js`.
-  - `renderQuestionContent(cell)` — renders a question's content in the
-    overlay (currently just escaped text).
+  - `renderQuestionContent(cell)` — starts the question's audio clip and
+    wires up the overlay's play/pause/replay controls. `stopAudio()` is
+    called from `closeQuestion()` so a clip never outlives its overlay.
   - `isGameOver()` — the end-of-game condition (currently: every cell used).
   - `markCorrect(playerIndex)` / `markWrong(playerIndex)` — scoring and
     per-question attempt tracking.
 - `questions.js` — the editable content file: `VALUES` (the 8 column point
   values) and `CATEGORIES` (8 categories, each with 8 questions in the same
-  order as `VALUES`). **Edit this file directly** to set up real questions
-  before a game; it currently ships with placeholder text.
+  order as `VALUES`). Each question is `{ audio, answer }`: `audio` is a path
+  (relative to `index.html`) to a pre-trimmed clip that is played in full.
+  **Edit this file directly** to set up real questions before a game; it
+  currently ships with placeholder paths to files that don't exist.
+- `audio/` — where the clip files go. Its contents are git-ignored (the
+  songs are copyrighted), only `.gitkeep` is tracked. How to prepare the
+  clips is still to be decided.
 
 ## Known future directions (not yet built)
 
@@ -58,13 +65,10 @@ The user has flagged these as likely follow-ups once the v1 prototype has
 been used in a real game — not current requirements, but the reason a few
 functions above are kept as isolated seams rather than inlined:
 
-1. **Audio questions** — questions may switch from plain text to playing an
-   audio file. Touches `renderQuestionContent()` and the `question` shape in
-   `questions.js`.
-2. **Multiple stages** — more than one full board (a "stage") may be needed,
+1. **Multiple stages** — more than one full board (a "stage") may be needed,
    with the number of stages configurable. Touches `buildBoard()` and the
    board-screen state/rendering, which currently assume a single board.
-3. **Configurable end-game trigger** — the end condition may become
+2. **Configurable end-game trigger** — the end condition may become
    something other than "all 64 cells used". Touches `isGameOver()`.
 
 When asked to build any of these, treat it as expected evolution of this

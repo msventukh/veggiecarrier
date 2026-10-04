@@ -218,6 +218,25 @@ h1 {
   margin-bottom: 16px;
 }
 
+.audio-status {
+  margin-bottom: 12px;
+}
+
+.audio-controls {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.audio-controls .secondary-btn {
+  margin: 0;
+}
+
+.audio-controls.hidden,
+.audio-controls .hidden {
+  display: none;
+}
+
 .overlay-answer {
   text-align: center;
   font-style: italic;
