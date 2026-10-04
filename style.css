@@ -1,0 +1,269 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Arial, sans-serif;
+  background: #0b1a33;
+  color: #f4f6fb;
+}
+
+#app {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.screen {
+  display: none;
+}
+
+.screen.active {
+  display: block;
+}
+
+h1 {
+  text-align: center;
+  color: #ffd84d;
+  letter-spacing: 2px;
+}
+
+.subtitle {
+  text-align: center;
+  opacity: 0.8;
+}
+
+/* Start screen */
+
+.count-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.count-btn {
+  width: 56px;
+  height: 56px;
+  font-size: 1.4rem;
+  border-radius: 50%;
+  border: 2px solid #3a5a9a;
+  background: #152a52;
+  color: #f4f6fb;
+  cursor: pointer;
+}
+
+.count-btn.selected {
+  background: #ffd84d;
+  color: #0b1a33;
+  border-color: #ffd84d;
+}
+
+.player-name-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 320px;
+  margin: 0 auto 20px;
+}
+
+.player-name-inputs input {
+  padding: 10px 12px;
+  font-size: 1rem;
+  border-radius: 6px;
+  border: 1px solid #3a5a9a;
+  background: #152a52;
+  color: #f4f6fb;
+}
+
+.primary-btn, .secondary-btn {
+  display: block;
+  margin: 12px auto;
+  padding: 12px 28px;
+  font-size: 1.05rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+.primary-btn {
+  background: #ffd84d;
+  color: #0b1a33;
+  font-weight: 700;
+}
+
+.primary-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.secondary-btn {
+  background: #3a5a9a;
+  color: #f4f6fb;
+}
+
+/* Board screen */
+
+.scoreboard {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.score-card {
+  background: #152a52;
+  border: 1px solid #3a5a9a;
+  border-radius: 8px;
+  padding: 10px 18px;
+  text-align: center;
+  min-width: 110px;
+}
+
+.score-card .name {
+  font-weight: 600;
+}
+
+.score-card .score {
+  font-size: 1.3rem;
+  color: #ffd84d;
+}
+
+.board-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 6px;
+}
+
+.board-table td {
+  text-align: center;
+}
+
+.category-cell {
+  background: #152a52;
+  color: #ffd84d;
+  font-weight: 700;
+  padding: 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.value-cell button {
+  width: 100%;
+  min-height: 56px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  border-radius: 6px;
+  border: none;
+  background: #1f3f7a;
+  color: #ffd84d;
+  cursor: pointer;
+}
+
+.value-cell button:disabled {
+  background: #10203f;
+  color: #45527a;
+  cursor: default;
+}
+
+/* Game over screen */
+
+.final-scores {
+  max-width: 340px;
+  margin: 0 auto 20px;
+  font-size: 1.2rem;
+}
+
+.final-scores li {
+  padding: 6px 0;
+}
+
+/* Question overlay */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.overlay.hidden {
+  display: none;
+}
+
+.overlay-panel {
+  background: #152a52;
+  border: 1px solid #3a5a9a;
+  border-radius: 10px;
+  padding: 28px;
+  max-width: 560px;
+  width: 90%;
+}
+
+.overlay-header {
+  text-align: center;
+  color: #ffd84d;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 16px;
+}
+
+.overlay-content {
+  font-size: 1.3rem;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.overlay-answer {
+  text-align: center;
+  font-style: italic;
+  opacity: 0.85;
+  margin-bottom: 16px;
+}
+
+.overlay-answer.hidden {
+  display: none;
+}
+
+.overlay-players {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.player-attempt-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #0b1a33;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+.player-attempt-row .player-name {
+  font-weight: 600;
+}
+
+.player-attempt-row .attempt-buttons button {
+  margin-left: 6px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-correct {
+  background: #3bb273;
+  color: #0b1a33;
+}
+
+.btn-wrong {
+  background: #c94f4f;
+  color: #f4f6fb;
+}

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Trivia Board</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app">
+
+  <section id="screen-start" class="screen active">
+    <h1>Trivia Board</h1>
+    <p class="subtitle">Choose the number of players</p>
+    <div id="count-buttons" class="count-buttons">
+      <button class="count-btn" data-count="2">2</button>
+      <button class="count-btn" data-count="3">3</button>
+      <button class="count-btn" data-count="4">4</button>
+    </div>
+    <div id="player-name-inputs" class="player-name-inputs"></div>
+    <button id="start-game-btn" class="primary-btn" disabled>Start Game</button>
+  </section>
+
+  <section id="screen-board" class="screen">
+    <div id="scoreboard" class="scoreboard"></div>
+    <table id="board-table" class="board-table"></table>
+  </section>
+
+  <section id="screen-gameover" class="screen">
+    <h1>Game Over</h1>
+    <ol id="final-scores" class="final-scores"></ol>
+    <button id="new-game-btn" class="primary-btn">New Game</button>
+  </section>
+
+</div>
+
+<div id="question-overlay" class="overlay hidden">
+  <div class="overlay-panel">
+    <div class="overlay-header">
+      <span id="overlay-category"></span> &mdash; <span id="overlay-value"></span>
+    </div>
+    <div id="overlay-content" class="overlay-content"></div>
+    <button id="reveal-answer-btn" class="secondary-btn">Reveal Answer</button>
+    <div id="overlay-answer" class="overlay-answer hidden"></div>
+    <div id="overlay-players" class="overlay-players"></div>
+    <button id="cancel-question-btn" class="secondary-btn">Cancel</button>
+  </div>
+</div>
+
+<script src="questions.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
