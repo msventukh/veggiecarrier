@@ -80,6 +80,31 @@ except `.gitkeep`, because the songs are copyrighted and shouldn't be
 committed. Any format your browser can play will work; MP3 is the safest
 choice.
 
+### Making clips from full songs
+
+`make-clips.sh` cuts clips out of full songs for you. It needs
+[ffmpeg](https://ffmpeg.org/) (macOS: `brew install ffmpeg`).
+
+1. Put the full songs in `audio/source/`. Use songs you've bought or ripped
+   from your own CDs.
+2. List the clips in `clips.txt`, one per line:
+
+   ```
+   audio/a-100.mp3 | audio/source/Queen - Bohemian Rhapsody.mp3 | 0:50 | 8
+   ```
+
+   The fields are: where the clip goes (the same path as in `questions.js`),
+   the source song, the start time (`1:23` or `83`), and the length in
+   seconds.
+3. Run `./make-clips.sh`.
+
+Each clip gets a short fade in and out, and its volume is evened out so
+clips play at a similar loudness. Cover art and song tags are removed so the
+file itself can't give the answer away. Every run re-creates all clips, so to
+adjust a clip, change its line and run the script again.
+`./make-clips.sh --dry-run` shows what would be done without creating
+anything.
+
 ## Project files
 
 | File           | What it's for                                                     |
@@ -89,3 +114,5 @@ choice.
 | `app.js`       | Game logic and in-memory game state                               |
 | `questions.js` | Your categories, point values, clips and answers                  |
 | `audio/`       | Your song clips (not committed to git)                            |
+| `make-clips.sh`| Cuts clips from full songs using `clips.txt`                      |
+| `clips.txt`    | The list of clips to cut: source song, start time, length         |

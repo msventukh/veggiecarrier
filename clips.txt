@@ -1,0 +1,18 @@
+# Clip list for make-clips.sh: one clip per line, fields separated by "|".
+#
+#   output | source | start | duration
+#
+#   output    where the clip goes; must match an `audio` path in questions.js
+#   source    the full song file (keep these in audio/source/, also git-ignored)
+#   start     where the clip starts in the song: seconds (83.5) or m:ss (1:23.5)
+#   duration  clip length in seconds
+#
+# Lines starting with # are ignored. Examples:
+#
+# audio/a-100.mp3 | audio/source/Queen - Bohemian Rhapsody.mp3 | 0:50 | 8
+# audio/a-200.mp3 | audio/source/ABBA - Dancing Queen.m4a      | 1:02 | 6.5
+audio/a-100.mp3 | audio/source/01Tommy Tallarico - Doobeedowapbop.mp3   | 0:05 | 15
+audio/a-200.mp3 | audio/source/03Tommy Tallarico - Granny Chair.mp3     | 0:51 | 15
+audio/a-300.mp3 | audio/source/05Tommy Tallarico - Italian Medley.mp3   | 0:27 | 15
+audio/a-400.mp3 | audio/source/11Thomas V. Tallarico, Tommy Tallarico - Dad's Tune.mp3   | 0:13 | 15
+audio/a-500.mp3 | audio/source/13Tommy Tallarico - Dixieland Finale.mp3   | 0:03 | 15

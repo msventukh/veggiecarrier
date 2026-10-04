@@ -56,8 +56,15 @@ round/tiebreaker, score penalties for wrong answers.
   **Edit this file directly** to set up real questions before a game; it
   currently ships with placeholder paths to files that don't exist.
 - `audio/` — where the clip files go. Its contents are git-ignored (the
-  songs are copyrighted), only `.gitkeep` is tracked. How to prepare the
-  clips is still to be decided.
+  songs are copyrighted), only `.gitkeep` is tracked. Full source songs go in
+  `audio/source/` (also ignored).
+- `make-clips.sh` + `clips.txt` — clip preparation. `clips.txt` lists
+  `output | source | start | duration` per clip; the script cuts each one
+  with ffmpeg (fades + loudness normalization, cover art/tags stripped) and
+  re-creates every clip on each run. `--dry-run` prints the ffmpeg commands.
+  Bash 3.2-compatible (macOS default). Sources must be legitimately obtained
+  files (bought or ripped) — the user explicitly rejected anything that
+  violates YouTube's ToS (downloading/recording from YouTube).
 
 ## Known future directions (not yet built)
 
