@@ -1,4 +1,6 @@
 audio/*
 !audio/.gitkeep
+.tmp/*
+.secrets
 .server.pid
 .server.log

@@ -41,7 +41,7 @@ There are no Daily Doubles, no Final round and no penalties for wrong answers.
 You don't need to install anything. There's no build step or package manager.
 
 1. Put your song clips in the `audio/` folder (see below).
-2. Edit `questions.js` with your categories and answers (see below).
+2. Pick or create the question file for your game (see below).
 3. Run `make start` in the project folder. It starts a small local web
    server in the background and opens the game at <http://localhost:8000>.
 4. Run `make stop` when you're done.
@@ -59,7 +59,19 @@ included. Avoid refreshing in the middle of a game.
 
 ## Setting up questions
 
-All game content is in **`questions.js`**. Edit it directly before a game.
+Each game's content lives in its own file in the **`questions/`** folder,
+for example `questions/questions.max-favs.js`. The game loads one of them,
+chosen by this line near the end of `index.html`:
+
+```html
+<script src="questions/questions.max-favs.js"></script>
+```
+
+To prepare a new game, copy an existing file (or
+`questions/questions.placeholder.js`, the blank template) to a new name,
+edit it, and change that line to point at it. Then reload the page.
+
+Each question file contains:
 
 - `VALUES` holds the 8 point values, one per column.
 - `CATEGORIES` holds the 8 categories. Each one has a `name` and exactly 8
@@ -74,7 +86,8 @@ video. You can mix both kinds on one board.
 { youtube: { id: "fJ9rUzIMcZQ", start: "0:50", end: "0:58" }, answer: "Queen — Bohemian Rhapsody" }
 ```
 
-- `audio` is the path to the clip, relative to `index.html`. The app plays the
+- `audio` is the path to the clip, relative to `index.html` (not to the
+  question file), for example `audio/rock-300.mp3`. The app plays the
   whole file, so trim each clip to the length you want before the game.
 - `youtube` plays part of a YouTube video:
   - `id` is the part after `v=` in the video's URL.
@@ -96,10 +109,10 @@ video. You can mix both kinds on one board.
   The question then shows an error instead of playing, so test your YouTube
   questions before the game.
 
-As shipped, `questions.js` contains placeholder categories (A–H) that point to
-audio files that don't exist. Opening one of those cells shows
-"Audio failed to load". Replace the placeholders with your own content before
-playing.
+`questions/questions.placeholder.js` contains placeholder categories (A–H)
+that point to audio files that don't exist. Opening one of those cells shows
+"Audio failed to load". It's meant as a starting point for a new game, not to
+be played as is.
 
 ### Audio files
 
@@ -121,7 +134,8 @@ choice.
    audio/a-100.mp3 | audio/source/Queen - Bohemian Rhapsody.mp3 | 0:50 | 8
    ```
 
-   The fields are: where the clip goes (the same path as in `questions.js`),
+   The fields are: where the clip goes (the same path as in your question
+   file),
    the source song, the start time (`1:23` or `83`), and the length in
    seconds.
 3. Run `./make-clips.sh`.
@@ -140,7 +154,7 @@ anything.
 | `index.html`   | Page layout: setup, board and Game Over screens, plus the question pop-up |
 | `style.css`    | All styling                                                       |
 | `app.js`       | Game logic and in-memory game state                               |
-| `questions.js` | Your categories, point values, clips and answers                  |
+| `questions/`   | One file per game: categories, point values, clips and answers   |
 | `audio/`       | Your song clips (not committed to git)                            |
 | `make-clips.sh`| Cuts clips from full songs using `clips.txt`                      |
 | `clips.txt`    | The list of clips to cut: source song, start time, length         |

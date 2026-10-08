@@ -49,7 +49,8 @@ round/tiebreaker, score penalties for wrong answers.
   question overlay markup (including the audio controls).
 - `style.css` — all styling.
 - `app.js` — all game logic and state. Key functions:
-  - `buildBoard()` — builds the in-memory board from `questions.js`.
+  - `buildBoard()` — builds the in-memory board from the loaded question
+    file's `VALUES` and `CATEGORIES` globals.
   - `renderQuestionContent(cell)` — starts the question's clip. A clip is
     either `createAudioClip()` (local file) or `createYouTubeClip()` (video
     segment), both behind one small interface (`status()`, `toggle()`,
@@ -63,14 +64,18 @@ round/tiebreaker, score penalties for wrong answers.
   - `isGameOver()` — the end-of-game condition (currently: every cell used).
   - `markCorrect(playerIndex)` / `markWrong(playerIndex)` — scoring and
     per-question attempt tracking.
-- `questions.js` — the editable content file: `VALUES` (the 8 column point
-  values) and `CATEGORIES` (8 categories, each with 8 questions in the same
-  order as `VALUES`). Each question is `{ audio, answer }` or
+- `questions/` — one question file per game, named `questions.<game>.js`
+  (e.g. `questions.max-favs.js`, the user's favorites; "Max" is the user).
+  `index.html` loads exactly one of them via its `<script src="questions/…">`
+  tag; switching games means changing that tag. Each file defines `VALUES`
+  (the 8 column point values) and `CATEGORIES` (8 categories, each with 8
+  questions in the same order as `VALUES`). Each question is `{ audio, answer }` or
   `{ youtube: { id, start, end }, answer }`: `audio` is a path (relative to
-  `index.html`) to a pre-trimmed clip that is played in full; `start`/`end`
-  are seconds or "m:ss" strings.
-  **Edit this file directly** to set up real questions before a game; it
-  currently ships with placeholder paths to files that don't exist.
+  `index.html`, not to the question file) to a pre-trimmed clip that is
+  played in full; `start`/`end` are seconds or "m:ss" strings.
+  **Edit these files directly** to set up a game.
+  `questions.placeholder.js` is the blank template (placeholder categories
+  A–H pointing at audio files that don't exist).
 - `audio/` — where the clip files go. Its contents are git-ignored (the
   songs are copyrighted), only `.gitkeep` is tracked. Full source songs go in
   `audio/source/` (also ignored).
