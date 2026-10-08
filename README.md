@@ -167,3 +167,13 @@ anything.
 | `audio/`       | Your song clips (not committed to git)                            |
 | `make-clips.sh`| Cuts clips from full songs using `clips.txt`                      |
 | `clips.txt`    | The list of clips to cut: source song, start time, length         |
+
+## License
+
+The code is released under the [MIT License](LICENSE), © 2026 Maksim
+Sventukh (@msventukh).
+
+The license covers this project's own code, docs and question files only.
+The music is not part of the project: songs and clips are never committed
+(see [Audio files](#audio-files)), and YouTube questions only reference
+videos by ID. All music belongs to its respective rights holders.
