@@ -33,6 +33,7 @@ start:
 		sleep 0.3; \
 	done; \
 	echo "Running at $(URL) (stop it with: make stop)"; \
+	echo "Game master view: $(URL)/gm.html"; \
 	if command -v open >/dev/null 2>&1; then open $(URL); fi
 
 stop:

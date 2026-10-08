@@ -327,3 +327,32 @@ h1 {
   background: #c94f4f;
   color: #f4f6fb;
 }
+
+/* Game master view (gm.html) */
+
+.gm-answer {
+  background: #152a52;
+  border: 1px solid #3a5a9a;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  min-height: 96px;
+  text-align: center;
+  font-size: 1.4rem;
+}
+
+.gm-meta {
+  color: #ffd84d;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.gm-board-wrap {
+  overflow-x: auto;
+}
+
+.value-cell button.selected {
+  background: #ffd84d;
+  color: #0b1a33;
+}
