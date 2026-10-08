@@ -12,15 +12,16 @@ them. Each question is a short song clip, and players try to name the song.
 
 ## How a game works
 
-1. **Setup.** Pick the number of players (2, 3 or 4) and type each player's
-   name. Then choose when the game ends:
-   - **Questions** (the default): after the number of **Questions to play**
-     you set, from 1 to 64 (64 by default, the whole board). A question
-     counts once someone answers it correctly or every player has tried it;
-     a cancelled question doesn't count.
-   - **Score**: as soon as one player reaches the **Points to win** you set
-     (5000 by default; the whole board is worth 32,800). If the board runs out
-     before anyone gets there, the game ends anyway.
+1. **Setup** happens in two steps:
+   1. Pick the number of players (2, 3 or 4) and type each player's name.
+   2. Once a player count is picked, choose when the game ends:
+      - **Questions** (the default): after the number of **Questions to
+        play** you set, from 1 to 64 (64 by default, the whole board). A
+        question counts once someone answers it correctly or every player has
+        tried it; a cancelled question doesn't count.
+      - **Score**: as soon as one player reaches the **Points to win** you
+        set (5000 by default; the whole board is worth 32,800). If the board
+        runs out before anyone gets there, the game ends anyway.
 
    **Start Game** becomes clickable once every name is filled in and the
    number for the chosen mode is a valid whole number. **New Game** keeps

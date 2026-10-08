@@ -21,6 +21,7 @@ function showScreen(id) {
 const countButtonsEl = document.getElementById("count-buttons");
 const playerNameInputsEl = document.getElementById("player-name-inputs");
 const startGameBtn = document.getElementById("start-game-btn");
+const modeSectionEl = document.getElementById("mode-section");
 const modeButtonsEl = document.getElementById("mode-buttons");
 const questionCountRowEl = document.getElementById("question-count-row");
 const questionCountInput = document.getElementById("question-count-input");
@@ -35,6 +36,8 @@ countButtonsEl.addEventListener("click", (e) => {
   countButtonsEl.querySelectorAll(".count-btn").forEach((b) => b.classList.remove("selected"));
   btn.classList.add("selected");
 
+  // Choosing when the game ends is the second step, after the player count.
+  modeSectionEl.classList.remove("hidden");
   renderPlayerNameInputs();
   validateStartForm();
 });
@@ -616,6 +619,7 @@ newGameBtn.addEventListener("click", () => {
 
   countButtonsEl.querySelectorAll(".count-btn").forEach((b) => b.classList.remove("selected"));
   playerNameInputsEl.innerHTML = "";
+  modeSectionEl.classList.add("hidden");
   startGameBtn.disabled = true;
 
   showScreen("screen-start");

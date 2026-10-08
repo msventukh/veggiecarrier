@@ -407,3 +407,7 @@ h1 {
 .game-goal {
   margin-top: 0;
 }
+
+.mode-section.hidden {
+  display: none;
+}
