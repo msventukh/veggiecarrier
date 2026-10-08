@@ -20,10 +20,14 @@
     <div id="player-name-inputs" class="player-name-inputs"></div>
     <p class="subtitle">Game ends after</p>
     <div id="mode-buttons" class="mode-buttons">
-      <button class="mode-btn selected" data-mode="all">All questions</button>
+      <button class="mode-btn selected" data-mode="questions">Questions</button>
       <button class="mode-btn" data-mode="score">Score</button>
     </div>
-    <div id="target-score-row" class="target-score-row hidden">
+    <div id="question-count-row" class="mode-setting">
+      <label for="question-count-input">Questions to play</label>
+      <input id="question-count-input" type="number" min="1" max="64" step="1" value="64">
+    </div>
+    <div id="target-score-row" class="mode-setting hidden">
       <label for="target-score-input">Points to win</label>
       <input id="target-score-input" type="number" min="100" step="100" value="5000">
     </div>

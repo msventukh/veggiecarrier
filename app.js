@@ -3,11 +3,11 @@ const state = {
   players: [],   // { name, score }
   board: null,   // [{ name, cells: [{ value, audio, youtube, answer, used }] }]
   activeCell: null, // { catIndex, valIndex, remainingPlayerIndexes }
-  endCondition: null, // { mode: "all" } or { mode: "score", target }
+  endCondition: null, // { mode: "questions", count } or { mode: "score", target }
 };
 
 let selectedPlayerCount = null;
-let selectedEndMode = "all"; // "all" (every question played) or "score" (a player reaches a target)
+let selectedEndMode = "questions"; // "questions" (a number of questions played) or "score" (a player reaches a target)
 
 // ---- Screens ----
 
@@ -22,6 +22,8 @@ const countButtonsEl = document.getElementById("count-buttons");
 const playerNameInputsEl = document.getElementById("player-name-inputs");
 const startGameBtn = document.getElementById("start-game-btn");
 const modeButtonsEl = document.getElementById("mode-buttons");
+const questionCountRowEl = document.getElementById("question-count-row");
+const questionCountInput = document.getElementById("question-count-input");
 const targetScoreRowEl = document.getElementById("target-score-row");
 const targetScoreInput = document.getElementById("target-score-input");
 
@@ -55,16 +57,32 @@ modeButtonsEl.addEventListener("click", (e) => {
   selectedEndMode = btn.dataset.mode;
 
   modeButtonsEl.querySelectorAll(".mode-btn").forEach((b) => b.classList.toggle("selected", b === btn));
+  questionCountRowEl.classList.toggle("hidden", selectedEndMode !== "questions");
   targetScoreRowEl.classList.toggle("hidden", selectedEndMode !== "score");
   validateStartForm();
 });
 
+questionCountInput.addEventListener("input", validateStartForm);
 targetScoreInput.addEventListener("input", validateStartForm);
+
+// The input's value as a whole number within its min/max attributes, or null
+// if invalid. (Browsers let people type values outside min/max.)
+function readWholeNumber(input) {
+  const value = Number(input.value);
+  const min = input.min === "" ? -Infinity : Number(input.min);
+  const max = input.max === "" ? Infinity : Number(input.max);
+  return input.value !== "" && Number.isInteger(value) && value >= min && value <= max ? value : null;
+}
+
+// The "Questions to play" value (1-64), or null if invalid.
+function readQuestionCount() {
+  return readWholeNumber(questionCountInput);
+}
 
 // The "Points to win" value as a positive whole number, or null if invalid.
 function readTargetScore() {
-  const value = Number(targetScoreInput.value);
-  return Number.isInteger(value) && value > 0 ? value : null;
+  const value = readWholeNumber(targetScoreInput);
+  return value !== null && value > 0 ? value : null;
 }
 
 function validateStartForm() {
@@ -74,8 +92,9 @@ function validateStartForm() {
   }
   const inputs = playerNameInputsEl.querySelectorAll("input");
   const allFilled = Array.from(inputs).every((i) => i.value.trim().length > 0);
-  const targetValid = selectedEndMode !== "score" || readTargetScore() !== null;
-  startGameBtn.disabled = !allFilled || !targetValid;
+  const settingValid =
+    selectedEndMode === "score" ? readTargetScore() !== null : readQuestionCount() !== null;
+  startGameBtn.disabled = !allFilled || !settingValid;
 }
 
 startGameBtn.addEventListener("click", () => {
@@ -83,8 +102,9 @@ startGameBtn.addEventListener("click", () => {
   state.players = Array.from(inputs).map((i) => ({ name: i.value.trim(), score: 0 }));
   state.board = buildBoard();
   state.endCondition =
-    selectedEndMode === "score" ? { mode: "score", target: readTargetScore() } : { mode: "all" };
-  renderGameGoal();
+    selectedEndMode === "score"
+      ? { mode: "score", target: readTargetScore() }
+      : { mode: "questions", count: readQuestionCount() };
   renderScoreboard();
   renderBoard();
   showScreen("screen-board");
@@ -112,9 +132,11 @@ const scoreboardEl = document.getElementById("scoreboard");
 const boardTableEl = document.getElementById("board-table");
 
 function renderGameGoal() {
-  const { mode, target } = state.endCondition;
+  const { mode, target, count } = state.endCondition;
   gameGoalEl.textContent =
-    mode === "score" ? `First to ${target} points wins` : "The game ends when every question has been played";
+    mode === "score"
+      ? `First to ${target} points wins`
+      : `The game ends after ${pluralize(count, "question")} (${questionsPlayed()} played)`;
 }
 
 function renderScoreboard() {
@@ -128,6 +150,7 @@ function renderScoreboard() {
 }
 
 function renderBoard() {
+  renderGameGoal();
   boardTableEl.innerHTML = "";
   state.board.forEach((category, catIndex) => {
     const row = document.createElement("tr");
@@ -526,6 +549,12 @@ function markWrong(playerIndex) {
 
 // ---- End game ----
 
+// Questions played so far: answered correctly, or tried by every player.
+// Cancelled questions don't count.
+function questionsPlayed() {
+  return state.board.reduce((n, category) => n + category.cells.filter((cell) => cell.used).length, 0);
+}
+
 function allQuestionsUsed() {
   return state.board.every((category) => category.cells.every((cell) => cell.used));
 }
@@ -540,6 +569,8 @@ function scoreWinner() {
 // Every mode also ends once the board runs out; in "score" mode that means
 // nobody reached the target.
 function isGameOver() {
+  const { mode, count } = state.endCondition;
+  if (mode === "questions" && questionsPlayed() >= count) return true;
   return Boolean(scoreWinner()) || allQuestionsUsed();
 }
 
@@ -563,7 +594,10 @@ function renderGameOver() {
   } else if (state.endCondition.mode === "score") {
     gameoverReasonEl.textContent = `All questions played — nobody reached ${state.endCondition.target} points`;
   } else {
-    gameoverReasonEl.textContent = "All questions played";
+    const { count } = state.endCondition;
+    gameoverReasonEl.textContent = allQuestionsUsed()
+      ? `All ${count} questions played`
+      : `${pluralize(count, "question")} played`;
   }
 
   const ranked = [...state.players].sort((a, b) => b.score - a.score);
@@ -588,6 +622,10 @@ newGameBtn.addEventListener("click", () => {
 });
 
 // ---- Utility ----
+
+function pluralize(n, word) {
+  return `${n} ${word}${n === 1 ? "" : "s"}`;
+}
 
 function escapeHtml(str) {
   const div = document.createElement("div");

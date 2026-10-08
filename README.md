@@ -14,18 +14,21 @@ them. Each question is a short song clip, and players try to name the song.
 
 1. **Setup.** Pick the number of players (2, 3 or 4) and type each player's
    name. Then choose when the game ends:
-   - **All questions** (the default): after every question has been played.
+   - **Questions** (the default): after the number of **Questions to play**
+     you set, from 1 to 64 (64 by default, the whole board). A question
+     counts once someone answers it correctly or every player has tried it;
+     a cancelled question doesn't count.
    - **Score**: as soon as one player reaches the **Points to win** you set
      (5000 by default; the whole board is worth 32,800). If the board runs out
      before anyone gets there, the game ends anyway.
 
-   **Start Game** becomes clickable once every name is filled in (and, in
-   Score mode, the target is a positive whole number). **New Game** keeps
+   **Start Game** becomes clickable once every name is filled in and the
+   number for the chosen mode is a valid whole number. **New Game** keeps
    your last choice.
 2. **The board.** The board has 8 categories (rows) and 8 point values
    (columns): 100, 200, 300, 400, 500, 600, 800 and 1000. Current scores are
-   shown above it, along with the goal (for example "First to 5000 points
-   wins").
+   shown above it, along with the goal (for example "The game ends after 20
+   questions (3 played)" or "First to 5000 points wins").
 3. **Opening a question.** Click a cell to open it. Its clip starts playing
    right away. The GM can:
    - **Pause** and then **Resume**, or **Replay from start**.

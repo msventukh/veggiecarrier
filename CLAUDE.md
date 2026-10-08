@@ -19,8 +19,10 @@ name "VeggieCarrier" references the popular YouTube channel "Овощевоз"
   no score penalty; the question just stays open for the next player who
   signaled. It closes as soon as someone answers correctly, or once every
   player has had an unsuccessful attempt (no one scores).
-- The end condition ("end mode") is chosen on the start screen: **All
-  questions** (all 64 cells used) or **Score** (first player to reach a
+- The end condition ("end mode") is chosen on the start screen:
+  **Questions** (a configurable number of questions played, 1–64, default
+  64; a question counts once it's used — answered correctly or tried by
+  everyone; Cancel doesn't count) or **Score** (first player to reach a
   configurable target; the game also ends if the board runs out first).
   Final scores are ranked on a Game Over screen (which also says why the
   game ended) with a reset-to-start "New Game" button.
@@ -72,10 +74,13 @@ round/tiebreaker, score penalties for wrong answers.
     Status stays "loading" through initial buffering; it falls back to
     "ready" (Play button) after 5 s in case autoplay was blocked.
   - `isGameOver()` — the end-of-game condition, driven by
-    `state.endCondition` (`{ mode: "all" }` or `{ mode: "score", target }`,
-    set from the start screen). Every mode also ends once all cells are
-    used (`allQuestionsUsed()`); `scoreWinner()` finds the player who hit
-    the target. New modes go here plus a button in `#mode-buttons`.
+    `state.endCondition` (`{ mode: "questions", count }` or
+    `{ mode: "score", target }`, set from the start screen). Every mode also
+    ends once all cells are used (`allQuestionsUsed()`); `questionsPlayed()`
+    counts used cells; `scoreWinner()` finds the player who hit the target.
+    Each mode's setting is a `.mode-setting` row with a number input whose
+    `min`/`max` attributes are the validation limits (`readWholeNumber()`).
+    New modes go here plus a button in `#mode-buttons`.
   - `markCorrect(playerIndex)` / `markWrong(playerIndex)` — scoring and
     per-question attempt tracking.
 - `questions/` — one question file per game, named `questions.<game>.js`

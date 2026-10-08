@@ -382,7 +382,7 @@ h1 {
   border-color: #ffd84d;
 }
 
-.target-score-row {
+.mode-setting {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -390,11 +390,11 @@ h1 {
   margin-bottom: 12px;
 }
 
-.target-score-row.hidden {
+.mode-setting.hidden {
   display: none;
 }
 
-.target-score-row input {
+.mode-setting input {
   width: 110px;
   padding: 8px 10px;
   font-size: 1rem;
