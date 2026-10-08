@@ -13,17 +13,24 @@ name "VeggieCarrier" references the popular YouTube channel "Овощевоз"
   100, 200, 300, 400, 500, 600, 800, 1000.
 - Each question is a short audio clip from a song; players guess the song.
   Opening a cell autoplays its clip. The GM can pause, then either resume or
-  replay from the start. The GM reveals the answer to themself via a toggle
-  and judges correctness manually — there's no automated answer-checking.
+  replay from the start. The GM judges correctness manually — there's no
+  automated answer-checking. To see answers without the players seeing them,
+  the GM opens the answer-key page (`gm.html`) on a second screen of the same
+  computer; the main page's Reveal Answer toggle still exists too.
 - Each player gets **exactly one attempt per question**. A wrong answer has
   no score penalty; the question just stays open for the next player who
   signaled. It closes as soon as someone answers correctly, or once every
   player has had an unsuccessful attempt (no one scores).
+- Setup is two steps on the start screen: (1) player count + names, then
+  (2) the end mode, which is hidden until a player count is picked.
 - The end condition ("end mode") is chosen on the start screen:
   **Questions** (a configurable number of questions played, 1–64, default
   64; a question counts once it's used — answered correctly or tried by
   everyone; Cancel doesn't count) or **Score** (first player to reach a
   configurable target; the game also ends if the board runs out first).
+  The Score default depends on the player count (`DEFAULT_TARGET_SCORES` in
+  `app.js`: 2 → 15000, 3 → 10000, 4 → 8000) until the GM types their own
+  target, which is then kept. New Game keeps the last mode and values.
   Final scores are ranked on a Game Over screen (which also says why the
   game ended) with a reset-to-start "New Game" button.
 
@@ -36,8 +43,11 @@ round/tiebreaker, score penalties for wrong answers.
   backend. Served by a plain static local server
   (`python3 -m http.server`, bound to 127.0.0.1), which YouTube's embedded
   player needs. `make start` / `make stop` run it in the background (PID in
-  `.server.pid`, git-ignored; `PORT=` overrides 8000). Local-file-only
-  boards still work opened directly from disk.
+  `.server.pid`, git-ignored; `PORT=` overrides 8000) and print both page
+  URLs. Keep the 127.0.0.1 binding: the GM view runs on the same computer
+  (second screen), and the user decided against exposing the game, answer
+  key included, to the LAN. Local-file-only boards still work opened
+  directly from disk.
 - YouTube questions use YouTube's IFrame Player API, loaded from
   youtube.com. That's the only network access, and it's needed for YouTube
   questions only.
@@ -105,6 +115,48 @@ round/tiebreaker, score penalties for wrong answers.
   Bash 3.2-compatible (macOS default). Sources must be legitimately obtained
   files (bought or ripped) — the user explicitly rejected anything that
   violates YouTube's ToS (downloading/recording from YouTube).
+
+## Preparing questions
+
+- **Sources:** YouTube clips (by video ID) or local clips cut by
+  `make-clips.sh`. The user rejects anything that violates YouTube's ToS:
+  no downloading or recording from YouTube, and no automated scraping of
+  YouTube pages. For YouTube metadata use the official **YouTube Data API**
+  (`videos.list`, 50 IDs per call, 1 quota unit each; avoid `search.list`,
+  which costs 100 units).
+- **API key:** `YOUTUBE_API_KEY=…` in `.secrets` (git-ignored). Read it from
+  the file in scripts; never print, log, or commit it.
+- **Personal data** goes in `.tmp/` (git-ignored), e.g.
+  `.tmp/liked-songs.tsv`: the user's YouTube Music liked songs as TSV
+  (`id, title, artist, album, duration, views`). `views` is the API
+  `viewCount` of that exact video (mostly "- Topic" audio tracks), which is
+  lower than YouTube Music's displayed "plays" (those include the music
+  video); the user accepted views as the popularity measure.
+- **Playability:** check `status.embeddable` and
+  `contentDetails.regionRestriction` with the API. Games are played in
+  **Germany (DE)**. Prefer this over browser playback tests, which time out
+  when the Chrome tab is in the background (Chrome defers media loading).
+- **Category conventions** used so far: 8 distinct songs per category, no
+  song repeated across the board, at most ~2 per artist (unless the category
+  is the artist); within a category the most-viewed song is worth 100 and
+  the least-viewed 1000. Answers are `"Artist — Title"`, plus a note where
+  useful: `(original: …)` for covers, the film/game for soundtracks. Start
+  and end times are left for the user to set.
+
+## Working on this repo
+
+- Keep `README.md` (human-facing) and this file in sync with every feature
+  change; the user expects docs updated alongside code.
+- Commit/push only when asked. Messages use conventional prefixes (`feat:`,
+  `docs:`, `refactor:`, `chore:`). The code is MIT-licensed (`LICENSE`,
+  © Maksim Sventukh (@msventukh)); music is never part of the repo.
+- Testing in a browser: the user often has their own `make start` server
+  running on port 8000 — reuse it and don't stop it (check `.server.pid`).
+  If you start one yourself, run `python3 -m http.server 8000 --bind
+  127.0.0.1` directly (`make start` opens a browser window on the user's
+  screen) and stop it afterwards. To test game logic silently, stub
+  `window.renderQuestionContent` and `window.updateClipControls` with no-ops
+  before opening questions.
 
 ## Known future directions (not yet built)
 
