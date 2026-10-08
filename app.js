@@ -380,7 +380,7 @@ function createYouTubeClip({ id, start = 0, end }, onChange) {
     return clip;
   }
   if (!id || isNaN(startSec) || (endSec !== null && isNaN(endSec))) {
-    fail(`Invalid YouTube clip in questions.js: ${JSON.stringify({ id, start, end })}`);
+    fail(`Invalid YouTube clip in the question file: ${JSON.stringify({ id, start, end })}`);
     return clip;
   }
 

@@ -2,7 +2,7 @@
 #
 #   output | source | start | duration
 #
-#   output    where the clip goes; must match an `audio` path in questions.js
+#   output    where the clip goes; must match an `audio` path in your questions/ file
 #   source    the full song file (keep these in audio/source/, also git-ignored)
 #   start     where the clip starts in the song: seconds (83.5) or m:ss (1:23.5)
 #   duration  clip length in seconds
