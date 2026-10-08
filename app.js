@@ -3,9 +3,11 @@ const state = {
   players: [],   // { name, score }
   board: null,   // [{ name, cells: [{ value, audio, youtube, answer, used }] }]
   activeCell: null, // { catIndex, valIndex, remainingPlayerIndexes }
+  endCondition: null, // { mode: "all" } or { mode: "score", target }
 };
 
 let selectedPlayerCount = null;
+let selectedEndMode = "all"; // "all" (every question played) or "score" (a player reaches a target)
 
 // ---- Screens ----
 
@@ -19,6 +21,9 @@ function showScreen(id) {
 const countButtonsEl = document.getElementById("count-buttons");
 const playerNameInputsEl = document.getElementById("player-name-inputs");
 const startGameBtn = document.getElementById("start-game-btn");
+const modeButtonsEl = document.getElementById("mode-buttons");
+const targetScoreRowEl = document.getElementById("target-score-row");
+const targetScoreInput = document.getElementById("target-score-input");
 
 countButtonsEl.addEventListener("click", (e) => {
   const btn = e.target.closest(".count-btn");
@@ -44,6 +49,24 @@ function renderPlayerNameInputs() {
   }
 }
 
+modeButtonsEl.addEventListener("click", (e) => {
+  const btn = e.target.closest(".mode-btn");
+  if (!btn) return;
+  selectedEndMode = btn.dataset.mode;
+
+  modeButtonsEl.querySelectorAll(".mode-btn").forEach((b) => b.classList.toggle("selected", b === btn));
+  targetScoreRowEl.classList.toggle("hidden", selectedEndMode !== "score");
+  validateStartForm();
+});
+
+targetScoreInput.addEventListener("input", validateStartForm);
+
+// The "Points to win" value as a positive whole number, or null if invalid.
+function readTargetScore() {
+  const value = Number(targetScoreInput.value);
+  return Number.isInteger(value) && value > 0 ? value : null;
+}
+
 function validateStartForm() {
   if (!selectedPlayerCount) {
     startGameBtn.disabled = true;
@@ -51,13 +74,17 @@ function validateStartForm() {
   }
   const inputs = playerNameInputsEl.querySelectorAll("input");
   const allFilled = Array.from(inputs).every((i) => i.value.trim().length > 0);
-  startGameBtn.disabled = !allFilled;
+  const targetValid = selectedEndMode !== "score" || readTargetScore() !== null;
+  startGameBtn.disabled = !allFilled || !targetValid;
 }
 
 startGameBtn.addEventListener("click", () => {
   const inputs = playerNameInputsEl.querySelectorAll("input");
   state.players = Array.from(inputs).map((i) => ({ name: i.value.trim(), score: 0 }));
   state.board = buildBoard();
+  state.endCondition =
+    selectedEndMode === "score" ? { mode: "score", target: readTargetScore() } : { mode: "all" };
+  renderGameGoal();
   renderScoreboard();
   renderBoard();
   showScreen("screen-board");
@@ -80,8 +107,15 @@ function buildBoard() {
 
 // ---- Board screen ----
 
+const gameGoalEl = document.getElementById("game-goal");
 const scoreboardEl = document.getElementById("scoreboard");
 const boardTableEl = document.getElementById("board-table");
+
+function renderGameGoal() {
+  const { mode, target } = state.endCondition;
+  gameGoalEl.textContent =
+    mode === "score" ? `First to ${target} points wins` : "The game ends when every question has been played";
+}
 
 function renderScoreboard() {
   scoreboardEl.innerHTML = "";
@@ -490,10 +524,23 @@ function markWrong(playerIndex) {
   }
 }
 
-// ---- End game (seam: swap this check for a different end condition later) ----
+// ---- End game ----
 
-function isGameOver() {
+function allQuestionsUsed() {
   return state.board.every((category) => category.cells.every((cell) => cell.used));
+}
+
+// The player who reached the target score in "score" mode, if any. Only one
+// player scores per question, so at most one can reach it first.
+function scoreWinner() {
+  const { mode, target } = state.endCondition;
+  return mode === "score" ? state.players.find((p) => p.score >= target) : undefined;
+}
+
+// Every mode also ends once the board runs out; in "score" mode that means
+// nobody reached the target.
+function isGameOver() {
+  return Boolean(scoreWinner()) || allQuestionsUsed();
 }
 
 function checkGameOver() {
@@ -505,10 +552,20 @@ function checkGameOver() {
 
 // ---- Game over screen ----
 
+const gameoverReasonEl = document.getElementById("gameover-reason");
 const finalScoresEl = document.getElementById("final-scores");
 const newGameBtn = document.getElementById("new-game-btn");
 
 function renderGameOver() {
+  const winner = scoreWinner();
+  if (winner) {
+    gameoverReasonEl.textContent = `${winner.name} reached the target of ${state.endCondition.target} points`;
+  } else if (state.endCondition.mode === "score") {
+    gameoverReasonEl.textContent = `All questions played — nobody reached ${state.endCondition.target} points`;
+  } else {
+    gameoverReasonEl.textContent = "All questions played";
+  }
+
   const ranked = [...state.players].sort((a, b) => b.score - a.score);
   finalScoresEl.innerHTML = ranked
     .map((p) => `<li>${escapeHtml(p.name)} &mdash; ${p.score}</li>`)
@@ -519,7 +576,9 @@ newGameBtn.addEventListener("click", () => {
   state.players = [];
   state.board = null;
   state.activeCell = null;
+  state.endCondition = null;
   selectedPlayerCount = null;
+  // The end mode and target are kept, so the next game starts with the same rules.
 
   countButtonsEl.querySelectorAll(".count-btn").forEach((b) => b.classList.remove("selected"));
   playerNameInputsEl.innerHTML = "";

@@ -19,8 +19,11 @@ name "VeggieCarrier" references the popular YouTube channel "Овощевоз"
   no score penalty; the question just stays open for the next player who
   signaled. It closes as soon as someone answers correctly, or once every
   player has had an unsuccessful attempt (no one scores).
-- Game ends once all 64 cells have been used; final scores are ranked on a
-  Game Over screen with a reset-to-start "New Game" button.
+- The end condition ("end mode") is chosen on the start screen: **All
+  questions** (all 64 cells used) or **Score** (first player to reach a
+  configurable target; the game also ends if the board runs out first).
+  Final scores are ranked on a Game Over screen (which also says why the
+  game ended) with a reset-to-start "New Game" button.
 
 Deliberately **not** implemented (minimal v1 scope): Daily Double, a Final
 round/tiebreaker, score penalties for wrong answers.
@@ -68,7 +71,11 @@ round/tiebreaker, score penalties for wrong answers.
     by polling `getCurrentTime()`, not the player's own `end` option.
     Status stays "loading" through initial buffering; it falls back to
     "ready" (Play button) after 5 s in case autoplay was blocked.
-  - `isGameOver()` — the end-of-game condition (currently: every cell used).
+  - `isGameOver()` — the end-of-game condition, driven by
+    `state.endCondition` (`{ mode: "all" }` or `{ mode: "score", target }`,
+    set from the start screen). Every mode also ends once all cells are
+    used (`allQuestionsUsed()`); `scoreWinner()` finds the player who hit
+    the target. New modes go here plus a button in `#mode-buttons`.
   - `markCorrect(playerIndex)` / `markWrong(playerIndex)` — scoring and
     per-question attempt tracking.
 - `questions/` — one question file per game, named `questions.<game>.js`
@@ -96,16 +103,17 @@ round/tiebreaker, score penalties for wrong answers.
 
 ## Known future directions (not yet built)
 
-The user has flagged these as likely follow-ups once the v1 prototype has
-been used in a real game — not current requirements, but the reason a few
-functions above are kept as isolated seams rather than inlined:
+The user has flagged this as a likely follow-up once the prototype has been
+used in real games — not a current requirement, but the reason
+`buildBoard()` is kept as an isolated seam:
 
-1. **Multiple stages** — more than one full board (a "stage") may be needed,
-   with the number of stages configurable. Touches `buildBoard()` and the
-   board-screen state/rendering, which currently assume a single board.
-2. **Configurable end-game trigger** — the end condition may become
-   something other than "all 64 cells used". Touches `isGameOver()`.
+- **Multiple stages** — more than one full board (a "stage") may be needed,
+  with the number of stages configurable. Touches `buildBoard()` and the
+  board-screen state/rendering, which currently assume a single board.
 
-When asked to build any of these, treat it as expected evolution of this
-project, not a surprise pivot — but don't preemptively generalize the code
-for them until actually asked.
+(The other flagged direction, a configurable end-game trigger, is now built:
+see `isGameOver()` above.)
+
+When asked to build this, treat it as expected evolution of this project,
+not a surprise pivot — but don't preemptively generalize the code for it
+until actually asked.

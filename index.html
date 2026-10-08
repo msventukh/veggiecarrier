@@ -18,16 +18,27 @@
       <button class="count-btn" data-count="4">4</button>
     </div>
     <div id="player-name-inputs" class="player-name-inputs"></div>
+    <p class="subtitle">Game ends after</p>
+    <div id="mode-buttons" class="mode-buttons">
+      <button class="mode-btn selected" data-mode="all">All questions</button>
+      <button class="mode-btn" data-mode="score">Score</button>
+    </div>
+    <div id="target-score-row" class="target-score-row hidden">
+      <label for="target-score-input">Points to win</label>
+      <input id="target-score-input" type="number" min="100" step="100" value="5000">
+    </div>
     <button id="start-game-btn" class="primary-btn" disabled>Start Game</button>
   </section>
 
   <section id="screen-board" class="screen">
+    <p id="game-goal" class="subtitle game-goal"></p>
     <div id="scoreboard" class="scoreboard"></div>
     <table id="board-table" class="board-table"></table>
   </section>
 
   <section id="screen-gameover" class="screen">
     <h1>Game Over</h1>
+    <p id="gameover-reason" class="subtitle"></p>
     <ol id="final-scores" class="final-scores"></ol>
     <button id="new-game-btn" class="primary-btn">New Game</button>
   </section>

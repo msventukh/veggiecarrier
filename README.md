@@ -13,10 +13,19 @@ them. Each question is a short song clip, and players try to name the song.
 ## How a game works
 
 1. **Setup.** Pick the number of players (2, 3 or 4) and type each player's
-   name. **Start Game** becomes clickable once every name is filled in.
+   name. Then choose when the game ends:
+   - **All questions** (the default): after every question has been played.
+   - **Score**: as soon as one player reaches the **Points to win** you set
+     (5000 by default; the whole board is worth 32,800). If the board runs out
+     before anyone gets there, the game ends anyway.
+
+   **Start Game** becomes clickable once every name is filled in (and, in
+   Score mode, the target is a positive whole number). **New Game** keeps
+   your last choice.
 2. **The board.** The board has 8 categories (rows) and 8 point values
    (columns): 100, 200, 300, 400, 500, 600, 800 and 1000. Current scores are
-   shown above it.
+   shown above it, along with the goal (for example "First to 5000 points
+   wins").
 3. **Opening a question.** Click a cell to open it. Its clip starts playing
    right away. The GM can:
    - **Pause** and then **Resume**, or **Replay from start**.
@@ -31,8 +40,9 @@ them. Each question is a short song clip, and players try to name the song.
      again, but the clip keeps going and the remaining players can still
      answer.
    - If every player answers wrong, the question closes and nobody scores.
-5. **Game over.** When all 64 cells have been used, the Game Over screen shows
-   the final ranking. **New Game** takes you back to setup.
+5. **Game over.** When the chosen end condition is met, the Game Over screen
+   shows why the game ended and the final ranking. **New Game** takes you back
+   to setup.
 
 There are no Daily Doubles, no Final round and no penalties for wrong answers.
 
