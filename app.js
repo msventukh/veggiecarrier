@@ -7,6 +7,11 @@ const state = {
 };
 
 let selectedPlayerCount = null;
+// Default "Points to win" for each player count: fewer players need a higher
+// target, since each one answers a bigger share of the board.
+const DEFAULT_TARGET_SCORES = { 2: 15000, 3: 10000, 4: 8000 };
+let targetScoreEdited = false; // once the GM types a target, keep it
+
 let selectedEndMode = "questions"; // "questions" (a number of questions played) or "score" (a player reaches a target)
 
 // ---- Screens ----
@@ -37,6 +42,7 @@ countButtonsEl.addEventListener("click", (e) => {
   btn.classList.add("selected");
 
   // Choosing when the game ends is the second step, after the player count.
+  if (!targetScoreEdited) targetScoreInput.value = DEFAULT_TARGET_SCORES[selectedPlayerCount];
   modeSectionEl.classList.remove("hidden");
   renderPlayerNameInputs();
   validateStartForm();
@@ -66,7 +72,10 @@ modeButtonsEl.addEventListener("click", (e) => {
 });
 
 questionCountInput.addEventListener("input", validateStartForm);
-targetScoreInput.addEventListener("input", validateStartForm);
+targetScoreInput.addEventListener("input", () => {
+  targetScoreEdited = true;
+  validateStartForm();
+});
 
 // The input's value as a whole number within its min/max attributes, or null
 // if invalid. (Browsers let people type values outside min/max.)

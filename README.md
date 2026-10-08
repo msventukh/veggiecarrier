@@ -20,8 +20,10 @@ them. Each question is a short song clip, and players try to name the song.
         question counts once someone answers it correctly or every player has
         tried it; a cancelled question doesn't count.
       - **Score**: as soon as one player reaches the **Points to win** you
-        set (5000 by default; the whole board is worth 32,800). If the board
-        runs out before anyone gets there, the game ends anyway.
+        set. The default depends on the number of players: 15,000 for 2,
+        10,000 for 3 and 8,000 for 4 (the whole board is worth 32,800). Once
+        you type your own target, it's kept. If the board runs out before
+        anyone gets there, the game ends anyway.
 
    **Start Game** becomes clickable once every name is filled in and the
    number for the chosen mode is a valid whole number. **New Game** keeps
@@ -29,7 +31,7 @@ them. Each question is a short song clip, and players try to name the song.
 2. **The board.** The board has 8 categories (rows) and 8 point values
    (columns): 100, 200, 300, 400, 500, 600, 800 and 1000. Current scores are
    shown above it, along with the goal (for example "The game ends after 20
-   questions (3 played)" or "First to 5000 points wins").
+   questions (3 played)" or "First to 10000 points wins").
 3. **Opening a question.** Click a cell to open it. Its clip starts playing
    right away. The GM can:
    - **Pause** and then **Resume**, or **Replay from start**.
