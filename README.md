@@ -57,6 +57,14 @@ files, you can skip it and simply open `index.html` in a browser instead.
 Nothing is saved. Reloading or closing the page clears the game, scores
 included. Avoid refreshing in the middle of a game.
 
+### Game master view
+
+<http://localhost:8000/gm.html> is a separate page for the GM, to open on a
+screen the players can't see. It shows the same board, and clicking a cell
+shows only that question's answer. It doesn't play anything or keep score;
+the game itself is still run on the main page. It always shows the same
+question file the main page loads, and it needs the local server.
+
 ## Setting up questions
 
 Each game's content lives in its own file in the **`questions/`** folder,
@@ -152,6 +160,7 @@ anything.
 | File           | What it's for                                                     |
 |----------------|-------------------------------------------------------------------|
 | `index.html`   | Page layout: setup, board and Game Over screens, plus the question pop-up |
+| `gm.html`, `gm.js` | Game master view: the board as an answer key                 |
 | `style.css`    | All styling                                                       |
 | `app.js`       | Game logic and in-memory game state                               |
 | `questions/`   | One file per game: categories, point values, clips and answers   |

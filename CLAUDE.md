@@ -47,7 +47,14 @@ round/tiebreaker, score penalties for wrong answers.
 
 - `index.html` — the three screens (start, board, game-over) plus the
   question overlay markup (including the audio controls).
-- `style.css` — all styling.
+- `gm.html` + `gm.js` — the game master's answer key, a separate page for a
+  screen the players can't see: the same board, where clicking a cell only
+  shows its answer. No playback, scoring, or sync with the main page (the GM
+  still runs the game there). It finds the question file by fetching
+  `index.html` and reading its `questions/` script tag, so `index.html`
+  stays the single place that picks the game; this needs the server
+  (`fetch` fails on file://).
+- `style.css` — all styling (both pages).
 - `app.js` — all game logic and state. Key functions:
   - `buildBoard()` — builds the in-memory board from the loaded question
     file's `VALUES` and `CATEGORIES` globals.
